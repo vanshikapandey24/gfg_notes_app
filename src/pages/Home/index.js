@@ -5,26 +5,18 @@ import { NoteContext } from '../../context/NoteContext';
 import NoteCard from '../../components/NoteCard';
 
 const Home = () => {
-  const { notes, setNotes, binNotes, setBinNotes, archivedNotes, setArchivedNotes } = useContext(NoteContext);
+  const {
+    notes,
+    setNotes,
+    binNotes,
+    setBinNotes,
+    archivedNotes,
+    setArchivedNotes,
+  } = useContext(NoteContext);
 
   const [title, setTitle] = useState('');
   const [noteText, setNoteText] = useState('');
 
-  // ✅ Pin toggle
-  const handlePinToggle = (id) => {
-    const updatedNotes = notes.map(note =>
-      note.id === id ? { ...note, pinned: !note.pinned } : note
-    );
-
-    const sortedNotes = [
-      ...updatedNotes.filter(note => note.pinned),
-      ...updatedNotes.filter(note => !note.pinned),
-    ];
-
-    setNotes(sortedNotes);
-  };
-
-  // ✅ Add new note
   const handleAddNote = () => {
     if (title.trim() === '' || noteText.trim() === '') return;
 
@@ -34,6 +26,7 @@ const Home = () => {
       text: noteText,
       pinned: false,
       archived: false,
+      important: false,
       createdAt: new Date(),
     };
 
@@ -42,7 +35,17 @@ const Home = () => {
     setNoteText('');
   };
 
-  // ✅ Move to bin
+  const handlePinToggle = (id) => {
+    const updatedNotes = notes.map(note =>
+      note.id === id ? { ...note, pinned: !note.pinned } : note
+    );
+    const sortedNotes = [
+      ...updatedNotes.filter(note => note.pinned),
+      ...updatedNotes.filter(note => !note.pinned),
+    ];
+    setNotes(sortedNotes);
+  };
+
   const handleMoveToBin = (id) => {
     const noteToDelete = notes.find(note => note.id === id);
     if (noteToDelete) {
@@ -51,7 +54,6 @@ const Home = () => {
     }
   };
 
-  // ✅ Archive Note
   const archiveNote = (id) => {
     const noteToArchive = notes.find(note => note.id === id);
     if (noteToArchive) {
@@ -60,7 +62,13 @@ const Home = () => {
     }
   };
 
-  // ✅ Clear All Notes
+  const toggleImportant = (id) => {
+    const updatedNotes = notes.map(note =>
+      note.id === id ? { ...note, important: !note.important } : note
+    );
+    setNotes(updatedNotes);
+  };
+
   const handleClearNotes = () => {
     if (window.confirm('Move all notes to Bin?')) {
       setBinNotes([...notes, ...binNotes]);
@@ -99,7 +107,6 @@ const Home = () => {
             >
               Add Note
             </button>
-
             <button
               className="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
               onClick={handleClearNotes}
@@ -110,18 +117,22 @@ const Home = () => {
 
           <div className="mt-6">
             <h2 className="text-lg font-semibold">Your Notes:</h2>
-            {notes.length === 0 && <p className="text-gray-500 mt-2">No notes yet.</p>}
-            <div className="mt-2 grid md:grid-cols-2 lg:grid-cols-3 gap-2">
-              {notes.map((note) => (
-                <NoteCard
-                  key={note.id}
-                  note={note}
-                  onDelete={() => handleMoveToBin(note.id)}
-                  onPinToggle={() => handlePinToggle(note.id)}
-                  onArchive={() => archiveNote(note.id)} // ✅ fixed
-                />
-              ))}
-            </div>
+            {notes.length === 0 ? (
+              <p className="text-gray-500 mt-2">No notes yet.</p>
+            ) : (
+              <div className="mt-2 grid md:grid-cols-2 lg:grid-cols-3 gap-2">
+                {notes.map((note) => (
+                  <NoteCard
+                    key={note.id}
+                    note={note}
+                    onDelete={() => handleMoveToBin(note.id)}
+                    onPinToggle={() => handlePinToggle(note.id)}
+                    onArchive={() => archiveNote(note.id)}
+                    onImportantToggle={() => toggleImportant(note.id)}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         </main>
       </div>
